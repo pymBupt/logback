@@ -17,6 +17,7 @@ import static ch.qos.logback.core.CoreConstants.UNBOUND_HISTORY;
 import static ch.qos.logback.core.CoreConstants.UNBOUNDED_TOTAL_SIZE_CAP;
 
 import java.io.File;
+import java.io.OutputStream;
 import java.util.Date;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -156,7 +157,16 @@ public class TimeBasedRollingPolicy<E> extends RollingPolicyBase implements Trig
         return timeBasedFileNamingAndTriggeringPolicy;
     }
 
+    protected FileSize getMaxFileSize() {
+        return null;
+    }
+
     public void rollover() throws RolloverFailure {
+        FileSize maxFileSize = getMaxFileSize();
+        String parentsRawFileProperty = getParentsRawFileProperty();
+        if (maxFileSize != null && new File(parentsRawFileProperty).length() < maxFileSize.getSize()) {
+            return;
+        }
 
         // when rollover is called the elapsed period's file has
         // been already closed. This is a working assumption of this method.
@@ -219,8 +229,8 @@ public class TimeBasedRollingPolicy<E> extends RollingPolicyBase implements Trig
         }
     }
 
-    public boolean isTriggeringEvent(File activeFile, final E event) {
-        return timeBasedFileNamingAndTriggeringPolicy.isTriggeringEvent(activeFile, event);
+    public boolean isTriggeringEvent(File activeFile, final E event,OutputStream outputStream) {
+        return timeBasedFileNamingAndTriggeringPolicy.isTriggeringEvent(activeFile, event, outputStream);
     }
 
     /**

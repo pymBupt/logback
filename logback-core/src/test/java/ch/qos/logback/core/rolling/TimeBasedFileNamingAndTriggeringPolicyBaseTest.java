@@ -61,7 +61,7 @@ public class TimeBasedFileNamingAndTriggeringPolicyBaseTest {
         timeBasedFNATP.start();
 
         timeBasedFNATP.setCurrentTime(startTime + MILLIS_IN_MINUTE);
-        timeBasedFNATP.isTriggeringEvent(null, null);
+        timeBasedFNATP.isTriggeringEvent(null, null, null);
         String elapsedPeriodsFileName = timeBasedFNATP.getElapsedPeriodsFileName();
         assertEquals("foo-2011-12T59.log", elapsedPeriodsFileName);
     }
@@ -80,7 +80,7 @@ public class TimeBasedFileNamingAndTriggeringPolicyBaseTest {
         timeBasedFNATP.start();
 
         timeBasedFNATP.setCurrentTime(startTime + MILLIS_IN_MINUTE);
-        boolean triggerred = timeBasedFNATP.isTriggeringEvent(null, null);
+        boolean triggerred = timeBasedFNATP.isTriggeringEvent(null, null, null);
         assertTrue(triggerred);
         String elapsedPeriodsFileName = timeBasedFNATP.getElapsedPeriodsFileName();
         assertEquals("foo-2011-12/59.log", elapsedPeriodsFileName);
@@ -97,7 +97,7 @@ public class TimeBasedFileNamingAndTriggeringPolicyBaseTest {
         timeBasedFNATP.start();
 
         timeBasedFNATP.setCurrentTime(startTime + MILLIS_IN_MINUTE + 2 * MILLIS_IN_HOUR);
-        boolean triggerred = timeBasedFNATP.isTriggeringEvent(null, null);
+        boolean triggerred = timeBasedFNATP.isTriggeringEvent(null, null, null);
         assertTrue(triggerred);
         String elapsedPeriodsFileName = timeBasedFNATP.getElapsedPeriodsFileName();
         assertEquals("foo-2011-12-20.log", elapsedPeriodsFileName);

@@ -30,8 +30,11 @@ public class SizeAndTimeBasedRollingPolicy<E> extends TimeBasedRollingPolicy<E> 
         // most work is done by the parent
         super.start();
     }
-    
-    
+
+    protected FileSize getMaxFileSize() {
+        return maxFileSize;
+    }
+
     public void setMaxFileSize(FileSize aMaxFileSize) {
         this.maxFileSize = aMaxFileSize;
     }

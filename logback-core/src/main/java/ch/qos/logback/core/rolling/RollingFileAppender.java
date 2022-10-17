@@ -17,7 +17,11 @@ import static ch.qos.logback.core.CoreConstants.CODES_URL;
 import static ch.qos.logback.core.CoreConstants.MORE_INFO_PREFIX;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -86,8 +90,8 @@ public class RollingFileAppender<E> extends FileAppender<E> {
 
         if (isPrudent()) {
             if (rawFileProperty() != null) {
-                addWarn("Setting \"File\" property to null on account of prudent mode");
-                setFile(null);
+                //addWarn("Setting \"File\" property to null on account of prudent mode");
+                //setFile(null);
             }
             if (rollingPolicy.getCompressionMode() != CompressionMode.NONE) {
                 addError("Compression is not supported in prudent mode. Aborting");
@@ -179,18 +183,33 @@ public class RollingFileAppender<E> extends FileAppender<E> {
      * Implemented by delegating most of the rollover work to a rolling policy.
      */
     public void rollover() {
-        lock.lock();
+        //lock.lock();
+        FileLock fileLock = null;
         try {
             // Note: This method needs to be synchronized because it needs exclusive
             // access while it closes and then re-opens the target file.
             //
             // make sure to close the hereto active log file! Renaming under windows
             // does not work for open files.
+            FileChannel fileChannel = new FileOutputStream(currentlyActiveFile.getAbsolutePath() + ".lock", true)
+                .getChannel();
+            fileLock = fileChannel.lock();
             this.closeOutputStream();
             attemptRollover();
             attemptOpenFile();
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         } finally {
-            lock.unlock();
+            //lock.unlock();
+            if (fileLock != null) {
+                try {
+                    fileLock.release();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
         }
     }
 
@@ -227,7 +246,7 @@ public class RollingFileAppender<E> extends FileAppender<E> {
         // We need to synchronize on triggeringPolicy so that only one rollover
         // occurs at a time
         synchronized (triggeringPolicy) {
-            if (triggeringPolicy.isTriggeringEvent(currentlyActiveFile, event)) {
+            if (triggeringPolicy.isTriggeringEvent(currentlyActiveFile, event, getOutputStream())) {
                 rollover();
             }
         }

@@ -16,10 +16,14 @@ package ch.qos.logback.core.rolling;
 import static ch.qos.logback.core.CoreConstants.MANUAL_URL_PREFIX;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.channels.FileChannel;
 import java.util.Date;
 
 import ch.qos.logback.core.CoreConstants;
 import ch.qos.logback.core.joran.spi.NoAutoStart;
+import ch.qos.logback.core.recovery.ResilientFileOutputStream;
 import ch.qos.logback.core.rolling.helper.ArchiveRemover;
 import ch.qos.logback.core.rolling.helper.CompressionMode;
 import ch.qos.logback.core.rolling.helper.FileFilterUtil;
@@ -134,7 +138,7 @@ public class SizeAndTimeBasedFNATP<E> extends TimeBasedFileNamingAndTriggeringPo
     InvocationGate invocationGate = new DefaultInvocationGate();
 
     @Override
-    public boolean isTriggeringEvent(File activeFile, final E event) {
+    public boolean isTriggeringEvent(File activeFile, final E event, OutputStream outputStream) {
 
         long time = getCurrentTime();
 
@@ -161,11 +165,19 @@ public class SizeAndTimeBasedFNATP<E> extends TimeBasedFileNamingAndTriggeringPo
             addWarn("maxFileSize = null");
             return false;
         }
-        if (activeFile.length() >= maxFileSize.getSize()) {
 
-            elapsedPeriodsFileName = tbrp.fileNamePatternWithoutCompSuffix.convertMultipleArguments(dateInCurrentPeriod, currentPeriodsCounter);
-            currentPeriodsCounter++;
-            return true;
+        //long length = activeFile.length();
+        ResilientFileOutputStream resilientFOS = (ResilientFileOutputStream)outputStream;
+        FileChannel fileChannel = resilientFOS.getChannel();
+        try {
+            if (fileChannel.size() >= maxFileSize.getSize()) {
+                elapsedPeriodsFileName = tbrp.fileNamePatternWithoutCompSuffix.convertMultipleArguments(
+                    dateInCurrentPeriod, currentPeriodsCounter);
+                currentPeriodsCounter++;
+                return true;
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
 
         return false;

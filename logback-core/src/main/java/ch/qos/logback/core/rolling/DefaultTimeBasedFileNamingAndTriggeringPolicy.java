@@ -14,6 +14,7 @@
 package ch.qos.logback.core.rolling;
 
 import java.io.File;
+import java.io.OutputStream;
 import java.util.Date;
 
 import ch.qos.logback.core.joran.spi.NoAutoStart;
@@ -43,7 +44,7 @@ public class DefaultTimeBasedFileNamingAndTriggeringPolicy<E> extends TimeBasedF
         started = true;
     }
 
-    public boolean isTriggeringEvent(File activeFile, final E event) {
+    public boolean isTriggeringEvent(File activeFile, final E event, OutputStream outputStream) {
         long time = getCurrentTime();
         if (time >= nextCheck) {
             Date dateOfElapsedPeriod = dateInCurrentPeriod;

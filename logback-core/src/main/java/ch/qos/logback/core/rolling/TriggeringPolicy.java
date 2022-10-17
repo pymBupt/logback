@@ -14,6 +14,7 @@
 package ch.qos.logback.core.rolling;
 
 import java.io.File;
+import java.io.OutputStream;
 
 import ch.qos.logback.core.spi.LifeCycle;
 
@@ -34,5 +35,5 @@ public interface TriggeringPolicy<E> extends LifeCycle {
      * @param event A reference to the currently event. 
      * @return true if a roll-over should occur.
      */
-    boolean isTriggeringEvent(final File activeFile, final E event);
+    boolean isTriggeringEvent(final File activeFile, final E event, OutputStream outputStream);
 }
