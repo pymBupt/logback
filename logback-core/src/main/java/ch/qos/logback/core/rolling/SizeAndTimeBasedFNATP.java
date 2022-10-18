@@ -37,7 +37,7 @@ public class SizeAndTimeBasedFNATP<E> extends TimeBasedFileNamingAndTriggeringPo
 
     enum Usage {EMBEDDED, DIRECT};
 
-    
+
     int currentPeriodsCounter = 0;
     FileSize maxFileSize;
     // String maxFileSizeAsString;
@@ -47,29 +47,29 @@ public class SizeAndTimeBasedFNATP<E> extends TimeBasedFileNamingAndTriggeringPo
     static String MISSING_DATE_TOKEN = "Missing date token, that is %d, in FileNamePattern [";
 
     private final Usage usage;
-    
+
     public SizeAndTimeBasedFNATP() {
         this(Usage.DIRECT);
     }
-    
+
     public SizeAndTimeBasedFNATP(Usage usage) {
         this.usage = usage;
     }
-    
+
     @Override
     public void start() {
         // we depend on certain fields having been initialized in super class
         super.start();
-        
+
         if(usage == Usage.DIRECT) {
           addWarn(CoreConstants.SIZE_AND_TIME_BASED_FNATP_IS_DEPRECATED);
           addWarn("For more information see "+MANUAL_URL_PREFIX+"appenders.html#SizeAndTimeBasedRollingPolicy");
         }
-        
+
         if (!super.isErrorFree())
             return;
 
-        
+
         if (maxFileSize == null) {
             addError("maxFileSize property is mandatory.");
             withErrors();
@@ -171,6 +171,7 @@ public class SizeAndTimeBasedFNATP<E> extends TimeBasedFileNamingAndTriggeringPo
         FileChannel fileChannel = resilientFOS.getChannel();
         try {
             if (fileChannel.size() >= maxFileSize.getSize()) {
+                // TODO currentPeriodsCounter 这个应该根据根据当前文件的情况调用ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP.computeCurrentPeriodsHighestCounterValue计算最大值
                 elapsedPeriodsFileName = tbrp.fileNamePatternWithoutCompSuffix.convertMultipleArguments(
                     dateInCurrentPeriod, currentPeriodsCounter);
                 currentPeriodsCounter++;
